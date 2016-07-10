@@ -57,8 +57,8 @@ class ImgFigure extends React.Component {
 
 		//if the rotation angle of images exists and don't equal 0, add it.
 		if (this.props.arrange.rotate) {
-			(['']).forEach(function(value) {
-				styleObj[value + 'transform'] = 'rotate(' + this.props.arrange.rotate + 'deg)';
+			(['MozTransform', 'msTransform', 'WebkitTransform', 'transform']).forEach(function(value) {
+				styleObj[value] = 'rotate(' + this.props.arrange.rotate + 'deg)';
 			}.bind(this));
 		}
 
@@ -85,7 +85,41 @@ class ImgFigure extends React.Component {
 	}
 }
 
+class ControllerUnit extends React.Component {
+	constructor(props) {
+		super(props);
+		this.handleClick = function(e) {
+			//如果點擊的是當前選中的按鈕，則將圖片翻轉，否則將圖片居中
 
+			if (props.arrange.isCenter) {
+				props.inverse();
+			} else {
+				props.center();
+			}
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	}
+
+	render() {
+		let controllerUnitClassName = 'controller-unit';
+		//如果對應居中圖片
+
+		if (this.props.arrange.isCenter) {
+
+			controllerUnitClassName += ' is-center';
+		}
+
+		//如果對應翻轉圖片
+		if (this.props.arrange.isInverse) {
+			controllerUnitClassName += ' is-inverse';
+		}
+		return (
+			<span className={controllerUnitClassName} onClick={this.handleClick}></span>
+
+		)
+	}
+}
 
 class AppComponent extends React.Component {
 	constructor(props) {
@@ -257,7 +291,6 @@ class AppComponent extends React.Component {
 		const imgFigures = [];
 		imageDataArr.forEach(function(value, index) {
 			if (!this.state.imgsArrangeArr[index]) {
-				alert(index);
 				this.state.imgsArrangeArr[index] = {
 					pos: {
 						left: 0,
@@ -269,8 +302,10 @@ class AppComponent extends React.Component {
 				};
 			}
 
-			imgFigures.push(<ImgFigure data={value} ref={'imgFigure'+index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>);
+			imgFigures.push(<ImgFigure key={index} data={value} ref={'imgFigure'+index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>);
+			controllerUnits.push(<ControllerUnit key={index} arrange={this.state.imgsArrangeArr[index]} inverse={this.inverse(index)} center={this.center(index)}/>);
 		}.bind(this));
+
 
 		return (
 			<section className="stage" ref="stage">
